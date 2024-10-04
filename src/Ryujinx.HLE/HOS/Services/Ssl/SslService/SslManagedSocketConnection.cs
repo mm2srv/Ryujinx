@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 {
@@ -113,10 +114,16 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             }
         }
 
+        static bool VerifyServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+        }
+
         public ResultCode Handshake(string hostName)
         {
             StartSslOperation();
-            _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, null, null);
+            // _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, null, null);
+            _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, VerifyServerCertificate, null);
             hostName = RetrieveHostName(hostName);
             _stream.AuthenticateAsClient(hostName, null, TranslateSslVersion(_sslVersion), false);
             EndSslOperation();
